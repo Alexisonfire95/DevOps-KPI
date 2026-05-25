@@ -120,7 +120,7 @@ mkdir -p "$DEPLOY_APP_DIR" "$DEPLOY_APP_CONFIG"
 	exit 1
 }
 chown -R "${DEPLOY_APP_USER}:" "$DEPLOY_APP_DIR"
-su -s /bin/bash "$DEPLOY_APP_USER" -c "cd $DEPLOY_APP_DIR && (pnpm install --frozen-lockfile 2>/dev/null || pnpm install)"
+su -s /bin/bash "$DEPLOY_APP_USER" -c "cd $DEPLOY_APP_DIR && pnpm install"
 
 umask 077
 render_template "$TMPL_DIR/config.yaml.template" "$DEPLOY_APP_CONFIG_FILE"

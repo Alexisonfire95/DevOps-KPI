@@ -1,8 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+APP_DIR="${DEPLOY_APP_DIR:-/opt/mywebapp}"
 CONFIG="${CONFIG_PATH:-${DEPLOY_APP_CONFIG_FILE:-/etc/mywebapp/config.yaml}}"
-cd "${DEPLOY_APP_DIR:?}"
+cd "$APP_DIR"
 export NODE_ENV=production
 
 case "${1:-}" in

@@ -9,6 +9,7 @@ User=${DEPLOY_APP_USER}
 Group=${DEPLOY_APP_USER}
 WorkingDirectory=${DEPLOY_APP_DIR}
 Environment=NODE_ENV=production
+Environment=DEPLOY_APP_DIR=${DEPLOY_APP_DIR}
 Environment=CONFIG_PATH=${DEPLOY_APP_CONFIG_FILE}
 
 SyslogIdentifier=${DEPLOY_UNIT}
