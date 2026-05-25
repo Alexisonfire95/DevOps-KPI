@@ -1,0 +1,7 @@
+/.idea
+/.bruno
+/.vagrant
+/.pnpm-store
+**/node_modules
+*.log
+.env
