@@ -136,7 +136,7 @@ render_template "$TMPL_DIR/mywebapp.socket.template" "/etc/systemd/system/${DEPL
 render_template "$TMPL_DIR/mywebapp.service.template" "/etc/systemd/system/${DEPLOY_UNIT}.service"
 systemctl daemon-reload
 systemctl enable "${DEPLOY_UNIT}.socket" "${DEPLOY_UNIT}.service"
-systemctl start "${DEPLOY_UNIT}.socket" "${DEPLOY_UNIT}"
+systemctl restart "${DEPLOY_UNIT}.socket" "${DEPLOY_UNIT}"
 
 echo "==> Nginx"
 render_template "$TMPL_DIR/nginx-mywebapp.conf.template" "/etc/nginx/sites-available/${DEPLOY_UNIT}"
