@@ -36,3 +36,74 @@ API віддає `application/json` або `text/html` за заголовком
 - Node.js 24 LTS, pnpm
 - PostgreSQL
 - nginx, systemd (socket activation)
+
+### Локальна розробка
+
+```bash
+pnpm install
+cp deploy/config.example.yaml config.local.yaml
+pnpm run migrate -- --config config.local.yaml
+pnpm start -- --config config.local.yaml
+```
+
+### API
+
+| Метод | Шлях | Опис |
+|-------|------|------|
+| GET | / | Список ендпоінтів (text/html) |
+| GET | /tasks | Список задач |
+| POST | /tasks | Створити задачу `{ "title": "..." }` |
+| POST | /tasks/:id/done | Відмітити задачу виконаною |
+| GET | /health/alive | Стан процесу (не публікується через nginx) |
+| GET | /health/ready | Готовність (БД) (не публікується через nginx) |
+
+## Розгортання на ВМ
+
+### Базовий образ та ресурси
+
+- Образ: Ubuntu 22.04 LTS — `ubuntu/jammy64`
+- Ресурси: 1 CPU, 1024 MB RAM
+- Конфігурація застосунку: `/etc/mywebapp/config.yaml`
+
+### Вхід на ВМ
+
+- `vagrant up`, потім `vagrant ssh`
+- Користувачі: `student`, `teacher`, `operator` — пароль `12345678` (зміна при першому вході)
+- Користувач `vagrant` після provision заблокований
+- Сервіс: системний користувач `mywebapp`
+
+### Запуск автоматизації
+
+```bash
+vagrant up
+```
+
+Provision (`scripts/provision.sh`): пакети, користувачі, PostgreSQL, копія застосунку в `/opt/mywebapp`, `config.yaml`, systemd socket activation, nginx, `/home/student/gradebook`.
+
+Після provision: http://localhost:8080 (порт 80 гостя проброшений на 8080 хоста).
+
+### Тестування
+
+З хоста:
+
+```bash
+curl http://localhost:8080/
+curl http://localhost:8080/tasks
+curl -X POST http://localhost:8080/tasks -H "Content-Type: application/json" -d "{\"title\":\"Test\"}"
+```
+
+Health зсередини ВМ:
+
+```bash
+vagrant ssh
+curl http://127.0.0.1:8080/health/alive
+curl http://127.0.0.1:8080/health/ready
+```
+
+Користувач `operator`:
+
+```bash
+sudo systemctl status mywebapp
+sudo systemctl restart mywebapp
+sudo systemctl reload nginx
+```
