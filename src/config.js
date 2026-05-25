@@ -50,7 +50,7 @@ export function loadConfig(configPath = resolveConfigPath()) {
 	return {
 		configPath: resolved,
 		host: server.host ?? "127.0.0.1",
-		port: requirePort(server.port ?? 8080, "server.port"),
+		port: requirePort(server.port ?? 5200, "server.port"),
 		dbHost: requireString(database.host ?? "127.0.0.1", "database.host"),
 		dbPort: requirePort(database.port ?? 5432, "database.port"),
 		dbUser: requireString(database.user, "database.user"),
