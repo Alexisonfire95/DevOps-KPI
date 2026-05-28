@@ -107,3 +107,78 @@ sudo systemctl status mywebapp
 sudo systemctl restart mywebapp
 sudo systemctl reload nginx
 ```
+
+## Docker Compose (ЛР2)
+
+Для контейнеризації та локального запуску застосунку у зв'язці з базою даних **PostgreSQL** та проксі-сервером **Nginx** використовується **Docker Compose**.
+
+### Мережа та архітектура в Docker
+
+Усі три сервіси запускаються в ізольованій мережі типу bridge під назвою `mywebapp-net`:
+- **db** (`postgres:17-alpine`): База даних. Доступна за внутрішнім іменем хоста `db:5432`. Дані зберігаються у persistent volume `mywebapp-db-data`. Реалізовано healthcheck за допомогою `pg_isready`.
+- **web** (Node.js застосунок на базі `node:24-alpine`): Веб-сервер, що працює на порту `5200`. Перед запуском застосунку скрипт `scripts/docker-entrypoint.sh` автоматично генерує `/etc/mywebapp/config.yaml`, очікує готовності БД та накочує міграції. Реалізовано healthcheck через `wget` на `/health/alive`.
+- **nginx** (`nginx:1.27-alpine`): Зворотний проксі (reverse proxy), що приймає зовнішні запити на порту `8080` та перенаправляє їх на сервіс `web:5200`. Доступ до `/health` та `/health/` ззовні заблоковано.
+
+### Запуск додатку
+
+1. Переконайтеся, що Docker Daemon запущено на вашому комп'ютері.
+2. Запустіть усі сервіси командою:
+   ```bash
+   docker compose up -d --build
+   ```
+3. Переглянути статус контейнерів та їхнє здоров'я (healthcheck):
+   ```bash
+   docker compose ps
+   ```
+4. Перегляд логів окремого сервісу або всього стеку:
+   ```bash
+   docker compose logs -f web
+   ```
+
+### Тестування API через Nginx
+
+Перевірити роботу застосунку з хоста можна аналогічно до ЛР1, але через порт **8080**:
+
+```bash
+# Перевірка головної сторінки (вимагає Accept: text/html)
+curl.exe -i -H "Accept: text/html" http://localhost:8080/
+
+# Отримання списку задач
+curl.exe -i http://localhost:8080/tasks
+
+# Створення нової задачі (приклад для Windows PowerShell з екрануванням або через файл)
+# Запишіть JSON у файл task.json: {"title": "Test Task"}
+# Тоді виконайте:
+curl.exe -i -X POST -H "Content-Type: application/json" -d "@task.json" http://localhost:8080/tasks
+```
+
+### Перевірка безпеки (блокування health-ендпоінтів)
+
+Nginx блокує зовнішні запити до `/health/alive` та `/health/ready` (повертає 404):
+```bash
+curl.exe -i http://localhost:8080/health/alive
+```
+
+### Перевірка персистентності бази даних
+
+Створіть задачу, після чого зупиніть та видаліть контейнери:
+```bash
+docker compose down
+```
+Запустіть їх знову:
+```bash
+docker compose up -d
+```
+Створені задачі мають зберегтися, оскільки дані PostgreSQL знаходяться у named volume `mywebapp-db-data`.
+
+### Зупинка та очищення
+
+Щоб зупинити та видалити всі контейнери та створену мережу:
+```bash
+docker compose down
+```
+Щоб видалити також persistent volume з даними бази:
+```bash
+docker compose down -v
+```
+
